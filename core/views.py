@@ -19,6 +19,7 @@ def submit_login(request):
             messages.error(request, "Usuario ou Senha inválido!")
             return redirect('/')
 
+
 def login_user(request):
     return render(request, 'login.html')
 
@@ -26,19 +27,27 @@ def login_user(request):
 def logout_user(request):
     logout(request)
     return redirect('/')
-#def index(request):
+
+
+# def index(request):
 #    return redirect('/agenda')
 
 @login_required(login_url='/login/')
 def lista_eventos(request):
     usuario = request.user
     evento = Evento.objects.filter(usuario=usuario)
-    dados = {'eventos' :evento}
+    dados = {'eventos': evento}
     return render(request, 'agenda.html', dados)
+
 
 @login_required(login_url='/login/')
 def evento(request):
-    return render(request, "evento.html")
+    id_evento = request.GET.get('id')
+    dados = {}
+    if id_evento:
+        dados['evento'] = Evento.objects.get(id=id_evento)
+    return render(request, "evento.html", dados)
+
 
 @login_required(login_url='/login/')
 def submit_evento(request):
@@ -50,5 +59,15 @@ def submit_evento(request):
         Evento.objects.create(titulo=titulo,
                               data_evento=data_evento,
                               descricao=descricao,
-                              usuario=usuario)
+                              usuario=usuario
+                              )
+    return redirect('/')
+
+
+@login_required(login_url='/login/')
+def delete_evento(request, id_evento):
+    usuario = request.user
+    evento = Evento.objects.get(id=id_evento)
+    if usuario == evento.usuario:
+        evento.delete()
     return redirect('/')
